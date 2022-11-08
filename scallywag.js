@@ -605,7 +605,44 @@ function generatePirateMap(canvas, seed)
 			gfx.fill();
 		}
 	}
-	
+
+  // Draw some random hazards
+  var iconNames = Object.keys(iconData).sort()
+  var iconSize = 32
+  var iconProb = .3, minIcons = 5
+  var iconOffset = iconSize
+  var pathStep = []
+  for (var n = 1; n < path.length - 2; ++n)
+    pathStep.push (n)
+  var nIcons = Math.min (pathStep.length, Math.max (minIcons, Math.floor (iconProb * pathStep.length)))
+  let hex = "0123456789abcdef".split('')
+  function randomColorDigit() {
+    return hex[Math.floor(random.next()*hex.length)]
+  }
+  function randomColor() {
+    return '#' + randomColorDigit() + '0' + randomColorDigit()  // no green
+  }
+  for (let i = 0; i < nIcons; ++i)
+  {
+    let j = i + Math.floor (random.next() * (pathStep.length - i))
+    let n = pathStep[j]
+    pathStep[j] = pathStep[i]
+    let iconName = iconNames[Math.floor(random.next() * iconNames.length)]
+    let iconColor = randomColor()
+    let svg = iconData[iconName].replace('#000',iconColor)
+    let blob = new Blob([svg], {type: 'image/svg+xml'});
+    let url = URL.createObjectURL(blob);
+    let icon = document.createElement('img');
+    icon.setAttribute('width',iconSize)
+    icon.setAttribute('height',iconSize)
+    icon.src = url;
+    let x = path[n].x + 2*(random.next()-.5)*iconOffset,
+        y = path[n].y + 2*(random.next()-.5)*iconOffset
+    icon.onload = function() {
+      gfx.drawImage(icon,x,y,iconSize,iconSize)
+    }
+  }
+  
 	// Draw the goal
 	for (var n = 4; n >= 1; n--)
 	{
